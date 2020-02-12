@@ -139,7 +139,7 @@ class AttentionUNet(nn.Module):
         s = d
         for i in range(self.depth):
             d = F.relu(self.bottleneck[i](d))
-            s += d
+            s = s + d
         d = s
 
         # decoding + concat path
