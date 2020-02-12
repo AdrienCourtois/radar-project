@@ -32,8 +32,6 @@ class ImageDataset(Dataset):
         mask_name = os.path.join(self.root_dir, "masks", self.csv.iloc[idx, 0] + ".png")
         mask = io.imread(mask_name)
 
-        print(self.transform)
-
         if self.transform:
             image = self.transform(image)
 
