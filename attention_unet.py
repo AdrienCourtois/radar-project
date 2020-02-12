@@ -102,47 +102,52 @@ class AttentionUNet(nn.Module):
         # Encoder
         # Intially: 64, 128, 256, 512, 1024, 5 conv
 
-        self.Maxpool = nn.MaxPool2d(kernel_size=2,stride=2)
+        self.Maxpool = [nn.MaxPool2d(kernel_size=2,stride=2)]
 
-        # Encoder
+        ######################
+        # Encoder definition #
+        ######################
+
         self.Convs = [conv_block(3, filters)]
         for i in range(n_block-1): #in: filters, out: filters*2**(n_block-1)
             self.Convs.append(conv_block(filters * 2**i, filters * 2**(i+1)))
         
-        # Bottleneck
+        # Register the corresponding modules
+        for i in range(self.n_block):
+            if i > 0:
+                self.add_module("Maxpool" + str(i), self.Maxpool[0])
+            self.add_module("DownConv" + str(i), self.Convs[i])
+
+
+        #########################
+        # Bottleneck definition #
+        #########################
+
         self.bottleneck = []
 
         for i in range(depth):
             self.bottleneck.append(nn.Conv2d(filters * 2**(n_block-1), filters * 2**(n_block-1), kernel_size=3, padding=2**i, dilation=2**i))
         
-        # Decoder
+        # Register the corresponding modules
+        for i in range(self.depth):
+            self.add_module("bottleneck" + str(i), self.bottleneck[i])
+        
+
+        ######################
+        # Decoder definition #
+        ######################
+
         self.Up_convs = [conv_block(filters * 2**i, filters * 2**(i-1)) for i in reversed(range(1, n_block))] # in: filters*2**(n_block-1), out: filters
         self.Ups = [up_conv(filters * 2**i, filters * 2**(i-1)) for i in reversed(range(1, n_block))] # idem
         self.Atts = [Attention_block(filters * 2**i, filters * 2**i, int(filters * 2 ** (i-1))) for i in reversed(range(0, n_block-1))]
 
+        # Register the corresponding modules
+        for idx, (layerA, layerB, layerC) in enumerate(zip(self.Ups, self.Atts, self.Up_convs)):
+            self.add_module("Up" + str(idx), layerA)
+            self.add_module("Attention" + str(idx), layerB)
+            self.add_module("UpConv" + str(idx), layerC)
+
         self.Conv_1x1 = nn.Conv2d(filters, 1, kernel_size=1, stride=1, padding=0)
-
-
-    def parameters(self):
-        params = []
-
-        # Encoder
-        for layer in self.Convs:
-            params.extend(layer.parameters())
-
-        # Bottleneck (if any)
-        for layer in self.bottleneck:
-            params.extend(layer.parameters())
-
-        # Decoder
-        for layerA, layerB, layerC in zip(self.Ups, self.Atts, self.Up_convs):
-            params.extend(layerA.parameters())
-            params.extend(layerB.parameters())
-            params.extend(layerC.parameters())
-        
-        params.extend(self.Conv_1x1.parameters())
-        
-        return params
 
 
     def forward(self,x):
@@ -151,7 +156,7 @@ class AttentionUNet(nn.Module):
 
         for i in range(self.n_block):
             if i > 0:
-                x = self.Maxpool(x)
+                x = self.Maxpool[0](x)
             x = self.Convs[i](x)
 
             x_s.append(x)
