@@ -54,6 +54,7 @@ class ImageDataset(Dataset):
 
         # Resize
         image = transforms.functional.resize(image, (self.HEIGHT, self.WIDTH), 3)
+        mask = transforms.functional.resize(mask, (self.HEIGHT, self.WIDTH), 3)
 
         # RandomAffine
         if np.random.rand() <= 0.5:
@@ -61,7 +62,7 @@ class ImageDataset(Dataset):
             scale = 0.8 + 0.4 * np.random.rand()
 
             image = transforms.functional.affine(image, angle, (0,0), scale, 0, resample=2)
-            mask = transforms.functional.affine(image, angle, (0,0), 1, 0, resample=2)
+            mask = transforms.functional.affine(image, angle, (0,0), scale, 0, resample=2)
 
         # Horizontal flip
         if np.random.rand() <= 0.5:
