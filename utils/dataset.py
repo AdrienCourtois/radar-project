@@ -19,7 +19,7 @@ def gaussian_blur(x):
 class ImageDataset(Dataset):
     # Custom Dataset for the challenge #
 
-    def __init__(self, csv, root_dir, transform=True):
+    def __init__(self, csv, root_dir, transform=True, height=720, width=1280):
         """
         Args:
             csv (pandas.DataFrame): DataFrame where to find the path to the images.
@@ -31,8 +31,8 @@ class ImageDataset(Dataset):
         self.transform = transform
 
         # Images dimension
-        self.WIDTH = 1280
-        self.HEIGHT = 720
+        self.width = width
+        self.height = height
 
         # Random Erasing?
         self.post_transform = transforms.Compose([
@@ -45,15 +45,15 @@ class ImageDataset(Dataset):
     def F_transform(self, image, mask):
         # RandomCrop
         new_w, new_h = 1200, 700
-        top = np.random.randint(self.HEIGHT - new_h)
-        left = np.random.randint(self.WIDTH - new_w)
+        top = np.random.randint(self.height - new_h)
+        left = np.random.randint(self.width - new_w)
 
         image = transforms.functional.crop(image, top, left, new_h, new_w)
         mask = transforms.functional.crop(mask, top, left, new_h, new_w)
 
         # Resize
-        image = transforms.functional.resize(image, (self.HEIGHT, self.WIDTH), 3)
-        mask = transforms.functional.resize(mask, (self.HEIGHT, self.WIDTH), 3)
+        image = transforms.functional.resize(image, (self.height, self.width), 3)
+        mask = transforms.functional.resize(mask, (self.height, self.width), 3)
 
         # RandomAffine
         if np.random.rand() <= 0.5:
