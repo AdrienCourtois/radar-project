@@ -63,38 +63,10 @@ class Attention_block(nn.Module):
 
         return x*psi
 
-class Attention_block(nn.Module):
-    def __init__(self, F_g, F_l, F_int):
-        super(Attention_block,self).__init__()
-        self.W_g = nn.Sequential(
-            nn.Conv2d(F_g, F_int, kernel_size=1,stride=1,padding=0,bias=True),
-            nn.BatchNorm2d(F_int)
-            )
-        
-        self.W_x = nn.Sequential(
-            nn.Conv2d(F_l, F_int, kernel_size=1,stride=1,padding=0,bias=True),
-            nn.BatchNorm2d(F_int)
-        )
-
-        self.psi = nn.Sequential(
-            nn.Conv2d(F_int, 1, kernel_size=1,stride=1,padding=0,bias=True),
-            nn.BatchNorm2d(1),
-            nn.Sigmoid()
-        )
-        
-        self.relu = nn.ReLU(inplace=True)
-        
-    def forward(self,g,x):
-        g1 = self.W_g(g)
-        x1 = self.W_x(x)
-        psi = self.relu(g1+x1)
-        psi = self.psi(psi)
-
-        return x*psi
 
 class AttentionUNet(nn.Module):
     def __init__(self, filters=64, n_block=5, depth=0):
-        super(AttentionUNet,self).__init__()
+        super(AttentionUNet, self).__init__()
 
         self.n_block = n_block
         self.depth = depth
@@ -102,7 +74,7 @@ class AttentionUNet(nn.Module):
         # Encoder
         # Intially: 64, 128, 256, 512, 1024, 5 conv
 
-        self.Maxpool = [nn.MaxPool2d(kernel_size=2,stride=2)]
+        self.Maxpool = [nn.MaxPool2d(kernel_size=2, stride=2)]
 
         ######################
         # Encoder definition #
@@ -188,7 +160,7 @@ class AttentionUNet(nn.Module):
         vgg = vgg13_bn(pretrained=True)
 
         for idx, (x, y) in enumerate(zip(self.parameters(), vgg.parameters())):
-            if idx >= 40:
+            if idx > 31:
                 break
             
             x.data = y.data
