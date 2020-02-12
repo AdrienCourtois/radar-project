@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torchvision.models import vgg13_bn
 
 class conv_block(nn.Module):
     def __init__(self, ch_in, ch_out):
