@@ -44,7 +44,7 @@ class ImageDataset(Dataset):
     
     def F_transform(self, image, mask):
         # RandomCrop
-        new_w, new_h = 1200, 700
+        new_w, new_h = 1200, 650
         top = np.random.randint(self.height - new_h)
         left = np.random.randint(self.width - new_w)
 
