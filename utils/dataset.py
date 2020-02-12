@@ -1,7 +1,7 @@
 from torch.utils.data import Dataset
 import pandas as pd
 import os
-from skimage import io
+from PIL import Image
 import torch
 from torchvision import transforms
 from PIL import ImageFilter
@@ -53,7 +53,7 @@ class ImageDataset(Dataset):
         mask = transforms.functional.crop(mask, top, left, new_h, new_w)
 
         # Resize
-        image = transforms.functional.crop(image, (self.HEIGHT, self.WIDTH), 3)
+        image = transforms.functional.resize(image, (self.HEIGHT, self.WIDTH), 3)
 
         # RandomAffine
         if np.random.rand() <= 0.5:
@@ -86,10 +86,10 @@ class ImageDataset(Dataset):
             idx = idx.tolist()
 
         img_name = os.path.join(self.root_dir, "images", self.csv.iloc[idx, 0] + ".jpg")
-        image = io.imread(img_name)
+        image = Image.open(img_name)
 
         mask_name = os.path.join(self.root_dir, "masks", self.csv.iloc[idx, 0] + ".png")
-        mask = io.imread(mask_name)
+        mask = Image.open(mask_name)
 
         if self.transform:
             image, mask = self.F_transform(image, mask)
