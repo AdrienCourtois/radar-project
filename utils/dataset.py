@@ -2,6 +2,7 @@ from torch.utils.data import Dataset
 import pandas as pd
 import os
 from skimage import io
+import torch
 
 class ImageDataset(Dataset):
     # Custom Dataset for the challenge #
