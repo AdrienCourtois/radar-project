@@ -93,5 +93,8 @@ class ImageDataset(Dataset):
 
         if self.transform:
             image, mask = self.F_transform(image, mask)
+        else:
+            image = transforms.ToTensor()(image)
+            mask = transforms.ToTensor()(mask)
 
         return image, mask
