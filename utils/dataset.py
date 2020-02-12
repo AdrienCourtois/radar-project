@@ -31,6 +31,9 @@ class ImageDataset(Dataset):
         self.transform = transform
 
         # Images dimension
+        self.or_width = 1280
+        self.or_height = 720
+
         self.width = width
         self.height = height
 
@@ -45,8 +48,8 @@ class ImageDataset(Dataset):
     def F_transform(self, image, mask):
         # RandomCrop
         new_w, new_h = 1200, 650
-        top = np.random.randint(self.height - new_h)
-        left = np.random.randint(self.width - new_w)
+        top = np.random.randint(self.or_height - new_h)
+        left = np.random.randint(self.or_width - new_w)
 
         image = transforms.functional.crop(image, top, left, new_h, new_w)
         mask = transforms.functional.crop(mask, top, left, new_h, new_w)
