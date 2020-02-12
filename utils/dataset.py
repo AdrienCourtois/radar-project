@@ -67,14 +67,14 @@ class ImageDataset(Dataset):
         if np.random.rand() <= 0.5:
             image = transforms.functional.hflip(image)
             mask = transforms.functional.hflip(mask)
-        
-        # Readjust the mask
-        mask[mask > 0.5] = 1
-        mask[mask <= 0.5] = 0
 
         # Post transformation
         image = self.post_transform(image)
         mask = transforms.ToTensor()(mask)
+
+        # Readjust the mask
+        mask[mask > 0.5] = 1
+        mask[mask <= 0.5] = 0
 
         return image, mask
 
