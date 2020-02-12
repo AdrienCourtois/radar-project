@@ -38,7 +38,7 @@ class ImageDataset(Dataset):
         # Random Erasing?
         self.post_transform = transforms.Compose([
             transforms.ColorJitter(brightness=.7, contrast=.5, saturation=.5, hue=0.05),
-            gaussian_blur,
+            #gaussian_blur, <- The images are not blurry at all :p
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         ])
