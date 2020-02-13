@@ -58,10 +58,26 @@ class Attention_block(nn.Module):
     def forward(self,g,x):
         g1 = self.W_g(g)
         x1 = self.W_x(x)
+
+        # handling different sizes: zero padding
+        g1 = zero_pad_features(x1.size(), g1)
+
         psi = self.relu(g1+x1)
         psi = self.psi(psi)
 
         return x*psi
+
+def zero_pad_features(size, x):
+    tmp = torch.zeros(size)
+    if x.is_cuda:
+        tmp = tmp.cuda()
+    
+    start_x = int((tmp.size(2) - x.size(2)) / 2)
+    start_y = int((tmp.size(3) - x.size(3)) / 2)
+
+    tmp[:,:,start_x:x.size(2),start_y:x.size(3)] = x
+
+    return tmp
 
 
 class AttentionUNet(nn.Module):
@@ -147,6 +163,10 @@ class AttentionUNet(nn.Module):
         for i in range(self.n_block-1):
             d = self.Ups[i](d)
             x = self.Atts[i](d, x_s[-(i+2)])
+
+            # handling different sizes: zero padding
+            d = zero_pad_features(x.size(), d)
+            
             d = torch.cat((x, d), dim=1)
             d = self.Up_convs[i](d)
         
