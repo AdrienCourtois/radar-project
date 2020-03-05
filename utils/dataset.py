@@ -19,7 +19,7 @@ def gaussian_blur(x):
 class ImageDataset(Dataset):
     # Custom Dataset for the challenge #
 
-    def __init__(self, img_dir, label_dir, transform=True, height=210, width=210):
+    def __init__(self, img_dir, label_dir, transform=True, height=210, width=210, post_transform=None):
         """
         Args:
             img_dir (string): Directory with all the images.
@@ -27,6 +27,7 @@ class ImageDataset(Dataset):
             transform (boolean, optional): Should the transform be applied?
             height (int, optional): Desired height of the images
             width (int, optional): Desired width of the images
+            post_transform (PyTorch transform): Desired transformation. Is None, the default one is applied.
         """
         self.img_dir = img_dir
         self.label_dir = label_dir
@@ -36,13 +37,16 @@ class ImageDataset(Dataset):
         self.width = width
         self.height = height
 
-        # Random Erasing?
-        self.post_transform = transforms.Compose([
-            transforms.ColorJitter(brightness=.7, contrast=.5, saturation=.5, hue=0.05),
-            #gaussian_blur, <- The images are not blurry at all :p
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-        ])
+        if post_transform is None:
+            # Random Erasing?
+            self.post_transform = transforms.Compose([
+                transforms.ColorJitter(brightness=.7, contrast=.5, saturation=.5, hue=0.05),
+                #gaussian_blur, <- The images are not blurry at all :p
+                transforms.ToTensor(),
+                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+            ])
+        else:
+            self.post_transform = post_transform
 
         # Get the number of images
         self.image_names = list(filter(lambda x: ".png" in x, os.listdir(img_dir)))
