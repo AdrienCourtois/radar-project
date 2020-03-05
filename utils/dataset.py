@@ -55,6 +55,7 @@ class ImageDataset(Dataset):
         # Resize if too small
         if or_width < self.width or or_height < self.height:
             image = transforms.functional.resize(image, max(self.height, self.width)+1, interpolation=3)
+            mask = transforms.functional.resize(mask, max(self.height, self.width)+1, interpolation=3)
             or_width, or_height = image.size
 
         # RandomCrop
