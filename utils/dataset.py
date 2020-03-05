@@ -53,8 +53,14 @@ class ImageDataset(Dataset):
         self.n_images = len(self.image_names)
     
     def F_transform(self, image, mask):
-        # RandomCrop
         or_width, or_height = image.size
+
+        # Resize if too small
+        if or_width < self.width or or_height < self.height:
+            image = transforms.functional.resize(image, max(self.height, self.width), interpolation=3)
+            or_width, or_height = image.size
+
+        # RandomCrop
         top = np.random.randint(or_height - self.height)
         left = np.random.randint(or_width - self.width)
 
