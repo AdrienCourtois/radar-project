@@ -19,21 +19,20 @@ def gaussian_blur(x):
 class ImageDataset(Dataset):
     # Custom Dataset for the challenge #
 
-    def __init__(self, csv, root_dir, transform=True, height=720, width=1280):
+    def __init__(self, img_dir, label_dir, transform=True, height=210, width=210):
         """
         Args:
-            csv (pandas.DataFrame): DataFrame where to find the path to the images.
-            root_dir (string): Directory with all the images.
+            img_dir (string): Directory with all the images.
+            label_dir (string): Directory with all the labels.
             transform (boolean, optional): Should the transform be applied?
+            height (int, optional): Desired height of the images
+            width (int, optional): Desired width of the images
         """
-        self.csv = csv
-        self.root_dir = root_dir
+        self.img_dir = img_dir
+        self.label_dir = label_dir
         self.transform = transform
 
         # Images dimension
-        self.or_width = 1280
-        self.or_height = 720
-
         self.width = width
         self.height = height
 
@@ -44,23 +43,23 @@ class ImageDataset(Dataset):
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         ])
+
+        # Get the number of images
+        self.image_names = list(filter(lambda x: ".png" in x, os.listdir(img_dir)))
+        self.n_images = len(self.image_names)
     
     def F_transform(self, image, mask):
         # RandomCrop
-        new_w, new_h = 1200, 650
-        top = np.random.randint(self.or_height - new_h)
-        left = np.random.randint(self.or_width - new_w)
+        or_width, or_height = image.size
+        top = np.random.randint(or_height - self.height)
+        left = np.random.randint(or_width - self.width)
 
-        image = transforms.functional.crop(image, top, left, new_h, new_w)
-        mask = transforms.functional.crop(mask, top, left, new_h, new_w)
-
-        # Resize
-        image = transforms.functional.resize(image, (self.height, self.width), 3)
-        mask = transforms.functional.resize(mask, (self.height, self.width), 3)
+        image = transforms.functional.crop(image, top, left, self.height, self.width)
+        mask = transforms.functional.crop(mask, top, left, self.height, self.width)
 
         # RandomAffine
         if np.random.rand() <= 0.5:
-            angle = np.random.randint(-15, 15)
+            angle = 0
             scale = 0.8 + 0.4 * np.random.rand()
 
             image = transforms.functional.affine(image, angle, (0,0), scale, 0, resample=2)
@@ -82,16 +81,14 @@ class ImageDataset(Dataset):
         return image, mask
 
     def __len__(self):
-        return len(self.csv)
+        return self.n_images
 
     def __getitem__(self, idx):
-        if torch.is_tensor(idx):
-            idx = idx.tolist()
-
-        img_name = os.path.join(self.root_dir, "images", self.csv.iloc[idx, 0] + ".jpg")
+        img_name = os.path.join(self.img_dir, self.image_names[idx])
         image = Image.open(img_name)
 
-        mask_name = os.path.join(self.root_dir, "masks", self.csv.iloc[idx, 0] + ".png")
+        mask_name = "segmentation_" + "_".join(self.image_names[idx].split("_")[1:])
+        mask_name = os.path.join(self.label_dir, mask_name)
         mask = Image.open(mask_name)
 
         if self.transform:
