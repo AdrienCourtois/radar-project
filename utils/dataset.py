@@ -19,7 +19,7 @@ def gaussian_blur(x):
 class ImageDataset(Dataset):
     # Custom Dataset for the challenge #
 
-    def __init__(self, img_dir, label_dir, transform=True, height=210, width=210, post_transform=None):
+    def __init__(self, img_dir, label_dir, transform=True, height=210, width=210):
         """
         Args:
             img_dir (string): Directory with all the images.
@@ -27,7 +27,6 @@ class ImageDataset(Dataset):
             transform (boolean, optional): Should the transform be applied?
             height (int, optional): Desired height of the images
             width (int, optional): Desired width of the images
-            post_transform (PyTorch transform): Desired transformation. Is None, the default one is applied.
         """
         self.img_dir = img_dir
         self.label_dir = label_dir
@@ -37,16 +36,13 @@ class ImageDataset(Dataset):
         self.width = width
         self.height = height
 
-        if post_transform is None:
-            # Random Erasing?
-            self.post_transform = transforms.Compose([
-                transforms.ColorJitter(brightness=.7, contrast=.5, saturation=.5, hue=0.05),
-                #gaussian_blur, <- The images are not blurry at all :p
-                transforms.ToTensor(),
-                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-            ])
-        else:
-            self.post_transform = post_transform
+        # Random Erasing?
+        self.post_transform = transforms.Compose([
+            transforms.ColorJitter(brightness=.9, contrast=.2, saturation=.1, hue=0.05),
+            #gaussian_blur, <- The images are not blurry at all :p
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        ])
 
         # Get the number of images
         self.image_names = list(filter(lambda x: ".png" in x, os.listdir(img_dir)))
@@ -54,23 +50,35 @@ class ImageDataset(Dataset):
     
     def F_transform(self, image, mask):
         or_width, or_height = image.size
+        np_mask = np.array(mask)
 
         # Resize if too small
         if or_width < self.width or or_height < self.height:
-            image = transforms.functional.resize(image, max(self.height, self.width), interpolation=3)
+            image = transforms.functional.resize(image, max(self.height, self.width)+1, interpolation=3)
             or_width, or_height = image.size
 
         # RandomCrop
-        top = np.random.randint(or_height - self.height)
-        left = np.random.randint(or_width - self.width)
+        if np_mask.sum() == 0 or np.random.rand() <= 0.5: # really random
+            top = np.random.randint(or_height - self.height)
+            left = np.random.randint(or_width - self.width)
 
+        else: # randomnly select a building
+            x, y = np.meshgrid(np.arange(or_height), np.arange(or_width), indexing="ij")
+            coords = np.concatenate((x[:,:,None], y[:,:,None]), axis=-1)[np_mask > 0]
+
+            point = np.random.randint(len(coords))
+            selected_coord = coords[point]
+
+            left = max(0, selected_coord[1] - int(self.width/2))
+            top = max(0, selected_coord[0] - int(self.height/2))
+        
         image = transforms.functional.crop(image, top, left, self.height, self.width)
         mask = transforms.functional.crop(mask, top, left, self.height, self.width)
 
         # RandomAffine
         if np.random.rand() <= 0.5:
             angle = 0
-            scale = 0.8 + 0.4 * np.random.rand()
+            scale = 1 + 0.2 * np.random.rand()
 
             image = transforms.functional.affine(image, angle, (0,0), scale, 0, resample=2)
             mask = transforms.functional.affine(mask, angle, (0,0), scale, 0, resample=2)
@@ -81,7 +89,10 @@ class ImageDataset(Dataset):
             mask = transforms.functional.hflip(mask)
 
         # Post transformation
-        image = self.post_transform(image)
+        if np.sum(image) > 0:
+            image = self.post_transform(image)
+        else:
+            image = transforms.ToTensor()(image)
         mask = transforms.ToTensor()(mask)
 
         # Readjust the mask
