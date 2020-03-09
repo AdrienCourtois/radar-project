@@ -174,7 +174,7 @@ class AttentionUNet(nn.Module):
 
         return d
     
-    def initialize(self):
+    def initialize(self, focal_trick=False, pi=0.01):
         # Pretrain the encoder part of the network using the weight of a VGG
         
         vgg = vgg13_bn(pretrained=True)
@@ -184,3 +184,7 @@ class AttentionUNet(nn.Module):
                 break
             
             x.data = y.data
+        
+        # Focal loss trick
+        if focal_trick:
+            list(self.parameters())[idx].data = -torch.log(torch.tensor((1-pi)/pi))
