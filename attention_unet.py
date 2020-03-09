@@ -187,4 +187,4 @@ class AttentionUNet(nn.Module):
         
         # Focal loss trick
         if focal_trick:
-            list(self.parameters())[-1].data = -torch.log(torch.tensor((1-pi)/pi))
+            list(self.parameters())[-1].data[0] = -torch.log(torch.tensor((1-pi)/pi))
