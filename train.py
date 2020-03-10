@@ -41,8 +41,9 @@ def iou_loss(y_pred, y_true):
     num = (y_pred * y_true).sum((1,2,3))
     denom = (y_pred + y_true - y_pred * y_true).sum((1,2,3))
 
-    num[denom == 0] = 1
-    denom[denom == 0] = 1
+    if y_true.sum() == 0:
+        num = ((1-y_pred) * (1-y_true)).sum((1,2,3))
+        denom = (1-y_pred + 1-y_true - (1-y_pred) * (1-y_true)).sum((1,2,3))
 
     return num / denom
 
@@ -52,7 +53,7 @@ def dice_score(y_pred, y_true):
 
     return 2 * num / (denom + 1e-10)
 
-def focale_loss(y_pred, y_true, alpha=0.75, gamma=1):
+def focale_loss(y_pred, y_true, alpha=0.75, gamma=2):
     # y_pred: tensor [B, 1, H, W] binary predicted mask
     # y_true: tensor [B, 1, H, W] binary ground truth mask
     # --
@@ -63,14 +64,19 @@ def focale_loss(y_pred, y_true, alpha=0.75, gamma=1):
     m0 = y_true == 0
 
     p_t = torch.zeros(y_pred.size())
+    alpha_t = torch.zeros(y_pred.size())
+
+    if y_pred.is_cuda:
+        alpha_t = alpha_t.cuda()
+        p_t = p_t.cuda()
+
     p_t[m1] = y_pred[m1]
     p_t[m0] = 1-y_pred[m0]
 
-    alpha_t = torch.zeros(y_pred.size())
     alpha_t[m1] = alpha
     alpha_t[m0] = 1-alpha
 
-    L = - alpha_t * ((1 - p_t) ** gamma) * torch.log(p_t)
+    L = - alpha_t * ((1 - p_t) ** gamma) * torch.log(p_t + 1e-10)
 
     return L.sum((1,2,3))
 
@@ -81,6 +87,10 @@ for epoch in range(n_epochs):
 
     # Train
     model.train()
+    # Reset Kevin truc
+    #for m in model.modules():
+    #    if isinstance(m, nn.BatchNorm2d):
+    #        m.track_running_stats=True
 
     total_loss = 0
     train_metric = 0
@@ -91,11 +101,15 @@ for epoch in range(n_epochs):
         y_pred = model(x)
         y_pred = torch.sigmoid(y_pred)
         
-        crossentropy = (-0.8 * y * torch.log(y_pred + 1e-8) - 0.2 * (1-y) * torch.log(1-y_pred + 1e-8)).sum((1,2,3))
-        loss = crossentropy.mean() # + iou_loss(y_pred, y)
+        #crossentropy = (-0.8 * y * torch.log(y_pred + 1e-8) - 0.2 * (1-y) * torch.log(1-y_pred + 1e-8)).sum((1,2,3))
+        loss = focale_loss(y_pred, y).mean() #crossentropy.mean() # + iou_loss(y_pred, y)
+
+        if loss != loss:
+            print("nnnnnnnannnnnnnnn: ", loss)
+
         loss.backward()
 
-        if idx % true_batch_size == true_batch_size-1:
+        if idx * batch_size % true_batch_size == true_batch_size-1:
             optimizer.step()
             optimizer.zero_grad()
     
@@ -118,6 +132,10 @@ for epoch in range(n_epochs):
 
     # Evaluation
     model.eval()
+    # Trigger Kevin truc
+    #for m in model.modules():
+    #    if isinstance(m, nn.BatchNorm2d):
+    #        m.track_running_stats=False
 
     total_metric = 0
 
@@ -134,3 +152,5 @@ for epoch in range(n_epochs):
         total_metric += iou_loss(y_pred, y).sum().item()
     
     print("Epoch {}: Training loss: {} ; Validation IOU: {}".format(epoch+1, total_loss / len(train_loader), total_metric / len(test_loader)))
+
+torch.save(model.state_dict(), "./training1.pth")
