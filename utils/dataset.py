@@ -19,7 +19,7 @@ def gaussian_blur(x):
 class ImageDataset(Dataset):
     # Custom Dataset for the challenge #
 
-    def __init__(self, img_dir, label_dir, transform=True, height=210, width=210):
+    def __init__(self, img_dir, label_dir, transform=True, height=512, width=512):
         """
         Args:
             img_dir (string): Directory with all the images.
@@ -38,7 +38,7 @@ class ImageDataset(Dataset):
 
         # Random Erasing?
         self.post_transform = transforms.Compose([
-            transforms.ColorJitter(brightness=.9, contrast=.2, saturation=.1, hue=0.05),
+            #transforms.ColorJitter(brightness=.9, contrast=.2, saturation=.1, hue=0.05),
             #gaussian_blur, <- The images are not blurry at all :p
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
@@ -60,11 +60,11 @@ class ImageDataset(Dataset):
         np_mask = np.array(mask)
 
         # RandomCrop
-        if np_mask.sum() == 0 or np.random.rand() <= 0.5: # really random
+        if np_mask.sum() == 0 or np.random.rand() <= 1: # really random
             top = np.random.randint(or_height - self.height)
             left = np.random.randint(or_width - self.width)
 
-        else: # randomnly select a building
+        else: # randomnly select a building # DISABLED
             x, y = np.meshgrid(np.arange(or_height), np.arange(or_width), indexing="ij")
             coords = np.concatenate((x[:,:,None], y[:,:,None]), axis=-1)[np_mask > 0]
 
@@ -77,8 +77,8 @@ class ImageDataset(Dataset):
         image = transforms.functional.crop(image, top, left, self.height, self.width)
         mask = transforms.functional.crop(mask, top, left, self.height, self.width)
 
-        # RandomAffine
-        if np.random.rand() <= 0.5:
+        # RandomAffine # DISABLED
+        if np.random.rand() < 0:
             angle = 0
             scale = 1 + 0.2 * np.random.rand()
 
@@ -89,12 +89,13 @@ class ImageDataset(Dataset):
         if np.random.rand() <= 0.5:
             image = transforms.functional.hflip(image)
             mask = transforms.functional.hflip(mask)
+        
+        if np.random.rand() <= 0.5:
+            image = transforms.functional.vflip(image)
+            mask = transforms.functional.vflip(mask)
 
         # Post transformation
-        if np.sum(image) > 0:
-            image = self.post_transform(image)
-        else:
-            image = transforms.ToTensor()(image)
+        image = self.post_transform(image)
         mask = transforms.ToTensor()(mask)
 
         # Readjust the mask
