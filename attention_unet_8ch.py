@@ -193,6 +193,8 @@ class AttentionUNet8C(nn.Module):
         vgg = vgg13_bn(pretrained=True)
 
         for idx, (x, y) in enumerate(zip(self.parameters(), vgg.parameters())):
+            if idx < 2:
+                continue
             if idx > 31:
                 break
             
