@@ -75,10 +75,6 @@ class ImageDataset(Dataset):
             image = transforms.functional.vflip(image)
             mask = transforms.functional.vflip(mask)
 
-        # Readjust the mask
-        mask[mask > 0.5] = 1
-        mask[mask <= 0.5] = 0
-
         return image, mask
 
     def __len__(self):
@@ -97,5 +93,9 @@ class ImageDataset(Dataset):
 
         image = self.post_transform(image)
         mask = transforms.ToTensor()(mask)
+
+        # Readjust the mask
+        mask[mask > 0.5] = 1
+        mask[mask <= 0.5] = 0
 
         return image, mask
