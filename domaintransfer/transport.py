@@ -2,7 +2,7 @@
 Sliced Optimal Transport
 
 This script takes two parameters as an input, the source (`source.png`), from which the style will be copied, and the target (`target.png`) the image to which the style will be applied. 
-The resulting image will be saved as reinhard_result.png.
+The resulting image will be saved as transport_result.png.
 This algorithm is a histogram transfer in 3D.
 
 Usage:
@@ -13,6 +13,24 @@ from PIL import Image
 import numpy as np
 import scipy.stats as st
 import matplotlib.pyplot as plt
+import argparse
+import os
+
+
+###################
+# Argument parser #
+###################
+
+parser = argparse.ArgumentParser(description='Usage: python transport.py source.png target.png')
+parser.add_argument("source", help="The source image")
+parser.add_argument("target", help="The target image")
+
+args = parser.parse_args()
+
+
+###########################################
+# Set of functions to make Transport work #
+###########################################
 
 def equalizeHistogramm(A, B) :
     # target : A, an image NxNx3
@@ -119,3 +137,10 @@ def SlicedOptimalTransfer(source, target, opened = False, returnSpeed = False):
         return result
     else:
         return result, np.array(speed)
+
+
+######################
+# Output computation #
+######################
+
+plt.imsave("transport_result.png", SlicedOptimalTransfer(parser.source, parser.target))
