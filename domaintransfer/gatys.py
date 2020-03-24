@@ -5,7 +5,7 @@ This script takes two parameters as an input, the source (`source.png`), from wh
 The resulting image will be saved as gatys_result.png.
 
 Usage:
-python gatys.py source.png target.png
+python gatys.py source.png target.png [-v|--verbose]
 """
 
 import torch
@@ -36,7 +36,7 @@ VGG19-bn
 parser = argparse.ArgumentParser(description='Usage: python gatys.py source.png target.png')
 parser.add_argument("source", help="The source image")
 parser.add_argument("target", help="The target image")
-parser.add_argument("-v", "--verbose", help="Enable it to see the evolution of the image and of the loss.", default=False)
+parser.add_argument("-v", "--verbose", help="Enable it to see the evolution of the image and of the loss.", action="store_true")
 
 args = parser.parse_args()
 
