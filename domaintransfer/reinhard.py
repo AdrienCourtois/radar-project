@@ -23,7 +23,6 @@ import os
 parser = argparse.ArgumentParser(description='Usage: python reinhard.py source.png target.png')
 parser.add_argument("source", help="The source image")
 parser.add_argument("target", help="The target image")
-parser.add_argument("-v", "--verbose", help="Enable it to see the evolution of the image and of the loss.", default=False)
 
 args = parser.parse_args()
 
