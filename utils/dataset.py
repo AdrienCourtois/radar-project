@@ -146,6 +146,6 @@ class ImageDataset(Dataset):
         if self.transform:
             image, mask = self.F_transform(image, mask)
         else:
-
+            image, mask = self.F_noTransform(image, mask)
 
         return image, mask
