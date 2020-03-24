@@ -77,10 +77,10 @@ class ImageDataset(Dataset):
         image = transforms.functional.crop(image, top, left, self.height, self.width)
         mask = transforms.functional.crop(mask, top, left, self.height, self.width)
 
-        # RandomAffine # DISABLED
-        if np.random.rand() < 0:
-            angle = 0
-            scale = 1 + 0.2 * np.random.rand()
+        # RandomAffine
+        if np.random.rand() <= 0.5:
+            angle = 90
+            scale =  1#1 + 0.2 * np.random.rand()
 
             image = transforms.functional.affine(image, angle, (0,0), scale, 0, resample=2)
             mask = transforms.functional.affine(mask, angle, (0,0), scale, 0, resample=2)
