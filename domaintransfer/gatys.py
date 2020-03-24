@@ -61,7 +61,7 @@ if parser.source and os.path.isfile(parser.source) and parser.target and os.path
         img_style = img_style.cuda()
         img_content = img_content.cuda()
 else:
-    raise Exception("You must spectify a source and target image.")
+    raise Exception("You must spectify avalid  source and target image.")
 
 
 #########
