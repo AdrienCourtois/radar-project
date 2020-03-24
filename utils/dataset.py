@@ -92,7 +92,7 @@ class ImageDataset(Dataset):
 
         return image, mask
     
-    def F_noTransform(image, mask):
+    def F_noTransform(self, image, mask):
         """
         Data adjustement when the parameter `transform` is set to False.
         e.g modifies the image size by resizing, adjusts the mean and std.
