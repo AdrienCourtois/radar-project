@@ -1,6 +1,12 @@
 """
 Algorithme Reinhard Color Transfert
 
+This script takes two parameters as an input, the source (`source.png`), from which the style will be copied, and the target (`target.png`) the image to which the style will be applied. 
+The resulting image will be saved as reinhard_result.png.
+The Reinhard algorithm is basically just histogram renormalization in the Lab space.
+
+Usage:
+python reinhard.py source.png target.png
 """
 
 from PIL import Image
