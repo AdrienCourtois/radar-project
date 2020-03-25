@@ -20,7 +20,7 @@ def save_checkpoint(state, is_best, save_path, filename='checkpoint.pth.tar'):
         path2 = os.path.join(save_path, 'model_best.pth.tar')
         shutil.copyfile(path, path2)
         
-def load_chekpoint(model, optimizer, resume):
+def load_checkpoint(model, optimizer, resume):
     if resume:
         if os.path.isfile(resume):
             print(f"Loading checkpoint: {resume}.")
