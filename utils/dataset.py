@@ -205,17 +205,14 @@ class ImageDataset_8channels(Dataset):
             or_width, or_height = image.size
             
             # RandomCrop
-            
             if self.height < or_height or self.width < or_width:
-                top = np.random.randint(or_height - self.height)
-                left = np.random.randint(or_width - self.width)
-                image = transforms.functional.crop(image, top, left, self.height, self.width)
-            if channel == 0:
-                mask = transforms.functional.crop(mask, top, left, self.height, self.width)
+              if channel == 0:
+                  top = np.random.randint(or_height - self.height)
+                  left = np.random.randint(or_width - self.width)
+                  mask = transforms.functional.crop(mask, top, left, self.height, self.width)
+              image = transforms.functional.crop(image, top, left, self.height, self.width)
 
-                
             # Random rotations
-            
             if flag_rotation:
                 angle = 90
                 image = transforms.functional.affine(image, angle, (0,0), 1, 0, resample=2)
@@ -227,7 +224,8 @@ class ImageDataset_8channels(Dataset):
                 image = transforms.functional.hflip(image)
                 if channel == 0:
                   mask = transforms.functional.hflip(mask)
-            
+
+            # Vertical flip
             if flag_vflip:
                 image = transforms.functional.vflip(image)
                 if channel == 0:
@@ -241,10 +239,9 @@ class ImageDataset_8channels(Dataset):
               mask[mask > 0.5] = 1
               mask[mask <= 0.5] = 0
             
-            l.append(image)
+            l.append(np.array(image)[:, :, np.newaxis])
             
         image = self.post_transform(np.concatenate(l, axis=2))
-
         return image, mask
     
     def F_noTransform(self, ima, mask):
@@ -268,14 +265,13 @@ class ImageDataset_8channels(Dataset):
             # RandomCrop
             
             if self.height < or_height or self.width < or_width:
-                top = np.random.randint(or_height - self.height)
-                left = np.random.randint(or_width - self.width)
-                image = transforms.functional.crop(image, top, left, self.height, self.width)
-            if channel == 0:
-                mask = transforms.functional.crop(mask, top, left, self.height, self.width)
+              if channel == 0:
+                  top = np.random.randint(or_height - self.height)
+                  left = np.random.randint(or_width - self.width)
+                  mask = transforms.functional.crop(mask, top, left, self.height, self.width)
+              image = transforms.functional.crop(image, top, left, self.height, self.width)
             
             # Post transform
-            
             if channel == 0:
               mask = transforms.ToTensor()(mask)
               # Readjust the mask
