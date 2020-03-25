@@ -34,5 +34,8 @@ def load_checkpoint(model, optimizer, resume):
         else:
             print(f"No checkpoint found at: {resume}.")
     else:
-      print(f"No checkpoint loaded.")
+        start_epoch = 0
+        best_IOU = 0
+        cpt = 1
+        print(f"No checkpoint loaded.")
     return model, optimizer, start_epoch, best_IOU, cpt 
