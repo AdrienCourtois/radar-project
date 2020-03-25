@@ -150,6 +150,7 @@ class ImageDataset(Dataset):
         return image, mask
     
 
+
 class ImageDataset_8channels(Dataset):
     def __init__(self, img_dir, label_dir, transform=True, height=512, width=512):
         """
@@ -232,7 +233,6 @@ class ImageDataset_8channels(Dataset):
                   mask = transforms.functional.vflip(mask)
             
             # Post transform
-            image = self.post_transform(image)
             if channel == 0:
               mask = transforms.ToTensor()(mask)
               # Readjust the mask
@@ -241,9 +241,9 @@ class ImageDataset_8channels(Dataset):
             
             l.append(np.array(image)[:, :, np.newaxis])
             
-        image = self.post_transform(np.concatenate(l, axis=2))
-        return image, mask
-    
+        images = self.post_transform(np.concatenate(l, axis=2))
+        return images, mask
+        
     def F_noTransform(self, ima, mask):
         """
         Data adjustement when the parameter `transform` is set to False.
@@ -254,16 +254,12 @@ class ImageDataset_8channels(Dataset):
             mask (PIL.Image array): The input mask
         """
 
-        if np.random.rand() <= 0.5:
-          flag_rotation = True
-        
         l = []
         for channel in range(ima.shape[2]):
             image = Image.fromarray(ima[:,:, channel])
             or_width, or_height = image.size
 
             # RandomCrop
-            
             if self.height < or_height or self.width < or_width:
               if channel == 0:
                   top = np.random.randint(or_height - self.height)
@@ -277,11 +273,11 @@ class ImageDataset_8channels(Dataset):
               # Readjust the mask
               mask[mask > 0.5] = 1
               mask[mask <= 0.5] = 0
-            #print(np.array(image)[:, np.newaxis].shape)
+            
             l.append(np.array(image)[:, :, np.newaxis])
         
-        image = self.post_transform(np.concatenate(l, axis=2))
-        return image, mask
+        images = self.post_transform(np.concatenate(l, axis=2))
+        return images, mask
 
     def __len__(self):
         """
