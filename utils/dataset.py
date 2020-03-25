@@ -15,7 +15,6 @@ def gaussian_blur(x):
     else:
         return x
 
-
 class ImageDataset(Dataset):
     def __init__(self, img_dir, label_dir, transform=True, height=512, width=512):
         """
