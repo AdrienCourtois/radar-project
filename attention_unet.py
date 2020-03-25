@@ -5,10 +5,11 @@ Args:
     filters (number): The number of filters of the first feature map. The rest will be 64*2**i, where i is the layer depth.
     n_block (number): Number of blocks of the encoder, or depth of the AutoEncoder.
     depth (number): Number of blocks of the bottleneck.
+    channels (number): Numbre of channels in the input image.
 
 Usage:
     from attention_unet import AttentionUNet
-    model = AttentionUNet(filters=64, n_block=5, depth=6)
+    model = AttentionUNet(filters=64, n_block=5, depth=6, channels=3)
 """
 
 import torch
@@ -94,12 +95,12 @@ def zero_pad_features(size, x):
 
 
 class AttentionUNet(nn.Module):
-    def __init__(self, filters=64, n_block=5, depth=6):
-        super(AttentionUNet, self).__init__()
+    def __init__(self, filters=64, n_block=5, depth=6, channels=3):
+        super().__init__()
 
         self.n_block = n_block
         self.depth = depth
-        
+        self.channels = channels
         # Encoder
         # Intially: 64, 128, 256, 512, 1024, 5 conv
 
@@ -109,7 +110,7 @@ class AttentionUNet(nn.Module):
         # Encoder definition #
         ######################
 
-        self.Convs = [conv_block(3, filters)]
+        self.Convs = [conv_block(self.channels, filters)]
         for i in range(n_block-1): #in: filters, out: filters*2**(n_block-1)
             self.Convs.append(conv_block(filters * 2**i, filters * 2**(i+1)))
         
@@ -193,6 +194,8 @@ class AttentionUNet(nn.Module):
         vgg = vgg13_bn(pretrained=True)
 
         for idx, (x, y) in enumerate(zip(self.parameters(), vgg.parameters())):
+            if self.channels == 8 and idx < 2:
+                continue
             if idx > 31:
                 break
             
