@@ -32,8 +32,9 @@ def load_checkpoint(model, optimizer, resume, mismatch=False):
             best_IOU = checkpoint['best_IOU']
             if mismatch:
               del checkpoint['state_dict']['DownConv0.conv.0.weight']
+            else:
+              optimizer.load_state_dict(checkpoint['optimizer'])
             model.load_state_dict(checkpoint['state_dict'], strict=False)
-            optimizer.load_state_dict(checkpoint['optimizer'])
             cpt = checkpoint['iter']
             print(f"Checkpoint loaded: Start epoch: {start_epoch}, Best IOU: {best_IOU:0.3f}.")
         else:
