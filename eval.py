@@ -17,9 +17,10 @@ import torchvision.transforms as transforms
 from PIL import Image
 import numpy as np 
 import matplotlib.pyplot as plt
-from utils.optim import Lookahead, RAdam
 import argparse
 import os
+from attention_unet import AttentionUNet
+
 ###################
 # Argument parser #
 ###################
