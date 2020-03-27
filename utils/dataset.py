@@ -7,13 +7,6 @@ from torchvision import transforms
 from PIL import ImageFilter
 import numpy as np
 
-def gaussian_blur(x):
-    if np.random.rand() <= 0.1:
-        img = x.filter(ImageFilter.GaussianBlur(radius=10*np.random.rand()))
-        
-        return img
-    else:
-        return x
 
 class ImageDataset(Dataset):
     def __init__(self, img_dir, label_dir, transform=True, height=512, width=512):
@@ -43,7 +36,7 @@ class ImageDataset(Dataset):
         ])
 
         # Get the number of images
-        self.image_names = list(filter(lambda x: ".png" in x, os.listdir(img_dir)))
+        self.image_names = list(filter(lambda x: ".png" in x, sorted(os.listdir(img_dir))))
         self.n_images = len(self.image_names)
     
     def F_transform(self, image, mask):
@@ -181,7 +174,7 @@ class ImageDataset_8channels(Dataset):
         ])
 
         # Get the number of images
-        self.image_names = list(filter(lambda x: ".npy" in x, os.listdir(img_dir)))
+        self.image_names = list(filter(lambda x: ".npy" in x, sorted(os.listdir(img_dir))))
         self.n_images = len(self.image_names)
     
     def F_transform(self, ima, mask, flag_rotation=False, flag_hflip=False, flag_vflip=False):
