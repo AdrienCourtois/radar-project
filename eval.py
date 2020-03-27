@@ -19,6 +19,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import argparse
 import os
+from attention_unet import AttentionUNet
 
 ###################
 # Argument parser #
