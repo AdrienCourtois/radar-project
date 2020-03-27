@@ -52,7 +52,6 @@ optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 # Load checkpoint
 checkpoint_folder = "gdrive/My Drive/finetune-vienna-paris/"
 resume = checkpoint_folder + "model_best.pth.tar"
-#resume = False
 
 model, optimizer, start_epoch, best_IOU, cpt = load_checkpoint(model, optimizer, resume)
 
