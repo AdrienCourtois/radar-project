@@ -82,14 +82,6 @@ def CreateClassSegmentation(rasterSrc, vectorSrc, npDistFileName='', units='pixe
     dist_trans[dist_trans < 0] = 0
     return dist_trans
 
-# Classic normalization:
-def norma(im):
-    # Ignores zeros    
-    im_no_zero = im.ravel()[im.ravel() != 0] 
-    im_norm = ((im - im_no_zero.min())*255. / (im.max() - im_no_zero.min())).astype(np.uint8)
-    im_norm[im == 0] = 0
-    return im_norm
-
 def norma_sep(im):
     # Ignores zeros
     ima = im.copy()
